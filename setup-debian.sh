@@ -1269,14 +1269,14 @@ system)
 	update_timezone
 	remove_unneeded
 	update_upgrade
-	install_dash
-	install_vim
+#	install_dash
+#	install_vim
 	install_nano
 	install_htop
-	install_mc
+#	install_mc
 	install_iotop
 	install_iftop
-	install_syslogd
+#	install_syslogd
 	apt_clean
 	;;
 *)
