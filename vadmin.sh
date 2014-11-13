@@ -239,24 +239,56 @@ function install_mysql {
 	# Install a low-end copy of the my.cnf to disable InnoDB
 	invoke-rc.d mysql stop
 	cat > /etc/mysql/conf.d/lowendbox.cnf <<END
-# These values override values from /etc/mysql/my.cnf
-
 [mysqld]
-key_buffer = 12M
-query_cache_size = 0
-table_cache = 32
-
-init_connect='SET collation_connection = utf8_unicode_ci'
-init_connect='SET NAMES utf8' 
-character-set-server = utf8 
-collation-server = utf8_unicode_ci 
-skip-character-set-client-handshake
-
-default_storage_engine=MyISAM
+key_buffer = 16K
+max_allowed_packet = 1M
+#table_cache = 100
+sort_buffer_size = 64K
+read_buffer_size = 256K
+read_rnd_buffer_size = 256K
+net_buffer_length = 2K
+#thread_stack = 64K
+#thread_stack = 256K
+#skip-bdb
 skip-innodb
+#innodb_use_native_aio=0
+#ignore-builtin-innodb
+default-storage-engine=MyISAM
+default-tmp-storage-engine=MyISAM
+max_connections = 50
+wait_timeout = 30
+key_buffer_size = 320K
+tmp_table_size = 36M
+max_heap_table_size = 36M
+query_cache_limit = 32M
 
-log-slow-queries=/var/log/mysql/slow-queries.log
-
+loose-innodb-trx=0 
+loose-innodb-locks=0 
+loose-innodb-lock-waits=0 
+loose-innodb-cmp=0 
+loose-innodb-cmp-per-index=0
+loose-innodb-cmp-per-index-reset=0
+loose-innodb-cmp-reset=0 
+loose-innodb-cmpmem=0 
+loose-innodb-cmpmem-reset=0 
+loose-innodb-buffer-page=0 
+loose-innodb-buffer-page-lru=0 
+loose-innodb-buffer-pool-stats=0 
+loose-innodb-metrics=0 
+loose-innodb-ft-default-stopword=0 
+loose-innodb-ft-inserted=0 
+loose-innodb-ft-deleted=0 
+loose-innodb-ft-being-deleted=0 
+loose-innodb-ft-config=0 
+loose-innodb-ft-index-cache=0 
+loose-innodb-ft-index-table=0 
+loose-innodb-sys-tables=0 
+loose-innodb-sys-tablestats=0 
+loose-innodb-sys-indexes=0
+loose-innodb-sys-columns=0
+loose-innodb-sys-fields=0
+loose-innodb-sys-foreign=0
+loose-innodb-sys-foreign-cols=0
 [client]
 default-character-set = utf8
 END
@@ -279,7 +311,7 @@ function install_php {
 	check_install php5-cli php5-cli
 
 	# PHP modules
-	DEBIAN_FRONTEND=noninteractive apt-get -y install php5-apc php5-suhosin php5-curl php5-gd php5-intl php5-mcrypt php-gettext php5-mysql php5-sqlite
+	DEBIAN_FRONTEND=noninteractive apt-get -y install php5-cgi php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-mhash php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-tidy php5-xmlrpc php-gettext php5-xsl php5-common php5-cli php5-fpm php5-apc php5-dev php5-mysql php5-sqlite
 
 	echo 'Using PHP-FPM to manage PHP processes'
 	echo ' '
@@ -523,8 +555,8 @@ server {
 	index index.html index.php;
 	client_max_body_size 32m;
 
-	#access_log  /var/www/$1/access.log;
-	error_log  /var/www/$1/error.log;
+	access_log  /var/log/nginx/$1.access.log;
+	error_log  /var/log/nginx/$1.error.log;
 
 	# Directives to send expires headers and turn off 404 error logging.
 	location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
@@ -833,7 +865,7 @@ function remove_unneeded {
 	# Remove rsyslogd, which allocates ~30MB privvmpages on an OpenVZ system,
 	# which might make some low-end VPS inoperatable. We will do this even
 	# before running apt-get update.
-	check_remove /usr/sbin/rsyslogd rsyslog
+#check_remove /usr/sbin/rsyslogd rsyslog
 
 	# Other packages that are quite common in standard OpenVZ templates.
 	check_remove /usr/sbin/apache2 'apache2*'
