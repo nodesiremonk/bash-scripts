@@ -351,7 +351,7 @@ server {
 	listen 80 default;
 	server_name _;
 	root /var/www/\$host/public;
-	index index.html index.htm index.php;
+	index index.html index.php;
 
 	# Directives to send expires headers and turn off 404 error logging.
 	location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
@@ -406,16 +406,16 @@ location ~ \.php$ {
 	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
 
 	# Some default config
-	fastcgi_connect_timeout        20;
-	fastcgi_send_timeout          180;
-	fastcgi_read_timeout          180;
-	fastcgi_buffer_size          128k;
-	fastcgi_buffers            4 256k;
-	fastcgi_busy_buffers_size    256k;
-	fastcgi_temp_file_write_size 256k;
+	fastcgi_buffers 256 16k; 
+	fastcgi_buffer_size 128k; 
+	fastcgi_connect_timeout 12s; 
+	fastcgi_send_timeout 120s; 
+	fastcgi_read_timeout 120s; 
+	fastcgi_busy_buffers_size 256k; 
+	fastcgi_temp_file_write_size 256k; 
 	fastcgi_intercept_errors    on;
 	fastcgi_ignore_client_abort off;
-	fastcgi_pass 127.0.0.1:9000;
+	fastcgi_pass unix:/var/run/php5-fpm.sock;
 
 }
 # PHP search for file Exploit:
@@ -440,21 +440,59 @@ END
 			/etc/nginx/sites-available/default
  fi
 
- if [ -f /etc/nginx/nginx.conf ]
+if [ -f /etc/nginx/nginx.conf ]
 	then
-		# one worker for each CPU and max 1024 connections/worker
-		cpu_count=`grep -c ^processor /proc/cpuinfo`
-		sed -i \
-			"s/worker_processes [0-9]*;/worker_processes $cpu_count;/" \
-			/etc/nginx/nginx.conf
-		sed -i \
-			"s/worker_connections [0-9]*;/worker_connections 1024;/" \
-			/etc/nginx/nginx.conf
-		# Enable advanced compression
-		sed -i \
-			"s/# gzip_/gzip_/g" \
-			/etc/nginx/nginx.conf
+		mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.default
  fi
+ 
+	cat > /etc/nginx/nginx.conf <<END
+user www-data;
+pid /run/nginx.pid;
+worker_processes  4;
+worker_rlimit_nofile 100000;
+events {
+    use epoll;
+    worker_connections 1024;
+    multi_accept on;
+}
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    access_log off;
+    error_log /var/log/nginx/error.log;
+    keepalive_timeout  65;
+    keepalive_requests 200;
+    sendfile on;
+    tcp_nopush on;
+    client_max_body_size 50M; 
+    client_body_buffer_size 1m; 
+    client_body_timeout 15; 
+    client_header_timeout 15; 
+    send_timeout 15; 
+    tcp_nodelay on;
+    
+    gzip on;
+    gzip_min_length 256;
+    gzip_comp_level 5;
+    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip_disable "msie6"; 
+    gzip_vary on; 
+    gzip_proxied any; 
+    gzip_buffers 16 8k; 
+    gzip_http_version 1.1; 
+
+    reset_timedout_connection on; 
+    server_names_hash_bucket_size 100;
+    
+    open_file_cache max=5000 inactive=30s;
+    open_file_cache_valid    60s;
+    open_file_cache_min_uses 3;
+    open_file_cache_errors   off;
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+END
 
 	# restart nginx
 	invoke-rc.d nginx restart
@@ -476,20 +514,16 @@ function install_site {
 Hello World
 END
 
-	# Setup test phpinfo.php file
-	echo "<?php phpinfo(); ?>" > /var/www/$1/public/phpinfo.php
-	chown www-data:www-data "/var/www/$1/public/phpinfo.php"
-
 	# Setting up Nginx mapping
 	cat > "/etc/nginx/sites-available/$1.conf" <<END
 server {
 	listen 80;
-	server_name www.$1 $1;
+	server_name $1;
 	root /var/www/$1/public;
-	index index.html index.htm index.php;
+	index index.html index.php;
 	client_max_body_size 32m;
 
-	access_log  /var/www/$1/access.log;
+	#access_log  /var/www/$1/access.log;
 	error_log  /var/www/$1/error.log;
 
 	# Directives to send expires headers and turn off 404 error logging.
