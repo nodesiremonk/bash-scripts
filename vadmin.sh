@@ -192,6 +192,7 @@ function install_syslogd {
 	# We just need a simple vanilla syslogd. Also there is no need to log to
 	# so many files (waste of fd). Just dump them into
 	# /var/log/(cron/mail/messages)
+	check_remove /usr/sbin/rsyslogd rsyslog
 	check_install /usr/sbin/syslogd inetutils-syslogd
 	invoke-rc.d inetutils-syslogd stop
 
