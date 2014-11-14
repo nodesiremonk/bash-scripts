@@ -262,6 +262,7 @@ key_buffer_size = 320K
 tmp_table_size = 36M
 max_heap_table_size = 36M
 query_cache_limit = 32M
+log-slow-queries=/var/log/mysql/slow-queries.log
 
 loose-innodb-trx=0 
 loose-innodb-locks=0 
