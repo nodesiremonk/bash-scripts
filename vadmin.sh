@@ -575,7 +575,6 @@ END
 	invoke-rc.d nginx restart
 
 	print_warn "New site successfully installed."
-	print_warn "You may can test PHP functionality by accessing $1/phpinfo.php"
 }
 
 function install_wordpress {
