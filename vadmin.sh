@@ -317,13 +317,9 @@ function install_php {
 	echo 'Using PHP-FPM to manage PHP processes'
 	echo ' '
 
-        print_info "Taking configuration backups in /root/bkps; you may keep or delete this directory"
-        mkdir /root/bkps
-	mv /etc/php5/conf.d/apc.ini /root/bkps/apc.ini
-
 cat > /etc/php5/conf.d/apc.ini <<END
 [APC]
-extension=apc.so
+;extension=apc.so
 apc.enabled=1
 apc.shm_segments=1
 apc.shm_size=32M
@@ -336,21 +332,6 @@ apc.post_max_size = 1000M
 apc.upload_max_filesize = 1000M
 apc.enable_cli=0
 apc.rfc1867=0
-END
-
-	mv /etc/php5/conf.d/suhosin.ini /root/bkps/suhosin.ini
-
-cat > /etc/php5/conf.d/suhosin.ini <<END
-; configuration for php suhosin module
-extension=suhosin.so
-suhosin.executor.include.whitelist="phar"
-suhosin.request.max_vars = 2048
-suhosin.post.max_vars = 2048
-suhosin.request.max_array_index_length = 256
-suhosin.post.max_array_index_length = 256
-suhosin.request.max_totalname_length = 8192
-suhosin.post.max_totalname_length = 8192
-suhosin.sql.bailout_on_error = Off
 END
 
 	if [ -f /etc/php5/fpm/php.ini ]
