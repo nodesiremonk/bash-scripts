@@ -459,7 +459,7 @@ location ~ \.php$ {
 END
 
 	# remove localhost-config
-	rm -f /etc/nginx/sites-enabled/default
+#rm -f /etc/nginx/sites-enabled/default
 
 	echo 'Created /etc/nginx/php.conf for PHP sites'
 	echo 'Created /etc/nginx/sites-available/default_php sample vhost'
