@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DEV_DIR="/var/www/hangely.ml/"
-PDT_DIR="/var/www/hangely.ml/production_site/"
+DEV_DIR="/var/www/develop_dir/"
+PDT_DIR="/var/www/production_dir/"
 
 if [[ $1 = "go" ]]
 then
