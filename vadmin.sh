@@ -543,12 +543,23 @@ server {
 
 	access_log  /var/log/nginx/$1.access.log;
 	error_log  /var/log/nginx/$1.error.log;
+	#error_page 404 /error/404/index.html;
 
 	# Directives to send expires headers and turn off 404 error logging.
-	location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+	location ~* \.(js|css|png|jpg|jpeg|gif|svg|mp3|mp4|ico)$ {
 		expires max;
 		log_not_found off;
 		access_log off;
+		
+		# prevent hotlink
+		# valid_referers none blocked ~.google. ~.bing. ~.yahoo. server_names ~($host);
+		# if ($invalid_referer) {
+		#    rewrite (.*) /static/images/hotlink-denied.jpg redirect;
+		#    # or use "return 403;" if don't want to redirect
+		#    # drop the 'redirect' flag for redirect without URL change (internal rewrite)
+		#    # need to add another line for: location = /static/images/hotlink-denied.jpg { }
+		#}
+		
 	}
 
 	location = /favicon.ico {
