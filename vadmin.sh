@@ -544,7 +544,12 @@ server {
 	access_log  /var/log/nginx/$1.access.log;
 	error_log  /var/log/nginx/$1.error.log;
 	#error_page 404 /error/404/index.html;
-
+	
+	#listen 443;
+        #ssl on;
+        #ssl_certificate /etc/nginx/ssl/.crt;
+        #ssl_certificate_key /etc/nginx/ssl/.key;
+	
 	# Directives to send expires headers and turn off 404 error logging.
 	location ~* \.(js|css|png|jpg|jpeg|gif|svg|mp3|mp4|ico)$ {
 		expires max;
