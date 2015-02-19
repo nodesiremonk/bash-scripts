@@ -585,6 +585,12 @@ server {
 
 	include /etc/nginx/php.conf;
 }
+
+# redirect www to non-www
+#server {
+#        server_name www.$1;
+#        return 301 $scheme://$1$request_uri;
+#}
 END
 	# Create the link so nginx can find it
 	ln -s /etc/nginx/sites-available/$1.conf /etc/nginx/sites-enabled/$1.conf
