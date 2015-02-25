@@ -589,14 +589,14 @@ server {
 # redirect www to non-www
 #server {
 #        server_name www.$1;
-#        return 301 $scheme://$1$request_uri;
+#        return 301 \$scheme://$1\$request_uri;
 #}
 
 # force https. need to remove listen 80 and just leave listen 443 and ssl config there
 #server {
 #       listen         80;
 #       server_name    $1;
-#       return         301 https://$server_name$request_uri;
+#       return         301 https://$server_name\$request_uri;
 #}
 
 END
