@@ -241,7 +241,7 @@ function install_mysql {
 	invoke-rc.d mysql stop
 	cat > /etc/mysql/conf.d/lowendbox.cnf <<END
 [mysqld]
-key_buffer = 16K
+#key_buffer = 16K
 max_allowed_packet = 1M
 #table_cache = 100
 sort_buffer_size = 64K
