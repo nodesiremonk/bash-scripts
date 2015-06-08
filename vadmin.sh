@@ -422,6 +422,8 @@ location ~ \.php$ {
 	fastcgi_param PATH_INFO \$fastcgi_path_info;
 	fastcgi_param PATH_TRANSLATED \$document_root\$fastcgi_path_info;
 	fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+	# uncomment the line below if the line above does not work
+	# fastcgi_param SCRIPT_FILENAME $request_filename;
 
 	# Some default config
 	fastcgi_buffers 256 16k; 
