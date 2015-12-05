@@ -184,6 +184,13 @@ function install_dotdeb {
 		echo "deb http://packages.dotdeb.org wheezy all" >> /etc/apt/sources.list
 		echo "deb-src http://packages.dotdeb.org wheezy all" >> /etc/apt/sources.list
 	fi
+	
+	# Debian version 8.x.x
+	if grep ^8. /etc/debian_version > /dev/null
+	then
+		echo "deb http://packages.dotdeb.org jessie all" >> /etc/apt/sources.list
+		echo "deb-src http://packages.dotdeb.org jessie all" >> /etc/apt/sources.list
+	fi
 
 	wget -q -O - http://www.dotdeb.org/dotdeb.gpg | apt-key add -
 }
