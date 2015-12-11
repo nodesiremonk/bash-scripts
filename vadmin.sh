@@ -554,10 +554,35 @@ server {
 	error_log  /var/log/nginx/$1.error.log;
 	#error_page 404 /error/404/index.html;
 	
-	#listen 443;
-        #ssl on;
+	#=========== Https start ===========
+	#listen 443 ssl;  # ssl only
+	#listen 443 ssl spdy;  # ssl with spdy
+	#listen 443 ssl http2; # ssl with http2, supported by v1.9.5
         #ssl_certificate /etc/nginx/ssl/.crt;
         #ssl_certificate_key /etc/nginx/ssl/.key;
+        
+        #ssl_session_cache shared:SSL:20m;
+        #ssl_session_timeout 60m;
+
+        #ssl_prefer_server_ciphers on;
+        #ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+        
+        # Need to create DH parameters file by: openssl dhparam 2048 -out /etc/nginx/cert/dhparam.pem
+        #ssl_dhparam /etc/nginx/cert/dhparam.pem;
+
+        #ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        
+        # Enable OCSP stapling, need to generate .crt first
+        #ssl_stapling on;
+        #ssl_stapling_verify on;
+        #ssl_trusted_certificate /etc/nginx/cert/trustchain.crt;
+        #resolver 8.8.8.8 8.8.4.4;
+        
+        # enable STS
+        #add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        #add_header Strict-Transport-Security "max-age=31536000" always;
+        
+	#=========== Https End ===========
 	
 	# Directives to send expires headers and turn off 404 error logging.
 	location ~* \.(js|css|png|jpg|jpeg|gif|svg|mp3|mp4|ico)$ {
