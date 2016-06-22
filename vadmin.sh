@@ -558,8 +558,8 @@ server {
 	#listen 443 ssl;  # ssl only
 	#listen 443 ssl spdy;  # ssl with spdy
 	#listen 443 ssl http2; # ssl with http2, supported by v1.9.5
-        #ssl_certificate /etc/nginx/ssl/.crt;
-        #ssl_certificate_key /etc/nginx/ssl/.key;
+        #ssl_certificate /etc/letsencrypt/live/$1/fullchain.pem;
+        #ssl_certificate_key /etc/letsencrypt/live/$1/privkey.pem;
         
         #ssl_session_cache shared:SSL:20m;
         #ssl_session_timeout 60m;
