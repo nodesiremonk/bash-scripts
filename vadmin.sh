@@ -525,6 +525,60 @@ END
 	invoke-rc.d nginx restart
 }
 
+function install_sslcert {
+	if [ -z "$1" ]
+	then
+		die "Usage: `basename $0` site [domain]"
+	fi
+	
+	cat > " /etc/letsencrypt/configs/$1.conf" <<END
+# the domain we want to get the cert for;
+# technically it's possible to have multiple of this lines, but it only worked
+# with one domain for me, another one only got one cert, so I would recommend
+# separate config files per domain.
+domains = $1
+
+# increase key size
+rsa-key-size = 4096
+
+# the current closed beta (as of 2015-Nov-07) is using this server
+server = https://acme-v01.api.letsencrypt.org/directory
+
+# this address will receive renewal reminders
+email = myemail@mydomain
+
+# turn off the ncurses UI, we want this to be run as a cronjob
+text = True
+
+# authenticate by placing a file in the webroot (under .well-known/acme-challenge/)
+# and then letting LE fetch it
+authenticator = webroot
+webroot-path = /var/www/letsencrypt/	
+END
+
+	renew_sslcert $1
+}
+
+function renew_sslcert {
+	if [ -z "$1" ]
+	then
+		die "Usage: `basename $0` site [domain]"
+	fi
+	
+	cd /opt/letsencrypt/
+	./letsencrypt-auto --config /etc/letsencrypt/configs/$1.conf certonly
+	
+	if [ $? -ne 0 ]
+	then
+	        ERRORLOG=`tail /var/log/letsencrypt/letsencrypt.log`
+	        echo -e "The Let's Encrypt cert has not been renewed! \n \n" \
+	                 $ERRORLOG
+ 	else
+ 		print_warn "New SSL cert has been successfully installed/renewed."
+	        nginx -s reload
+	fi
+}
+
 function install_site {
 
 	if [ -z "$1" ]
@@ -616,6 +670,11 @@ server {
 	location ~ /\.ht {
 		deny  all;
 	}
+	
+	## To allow Let's Encrypt to access the temporary file
+	#location /.well-known/acme-challenge {
+        #	root /var/www/letsencrypt;
+	#}
 
 	include /etc/nginx/php.conf;
 }
@@ -818,6 +877,15 @@ END
 	echo 'MySQL Database: ' $dbname
 }
 
+function install_letsencrypt {
+	check_install git git
+	git clone https://github.com/letsencrypt/letsencrypt /opt/letsencrypt
+	cd /opt/letsencrypt
+	./letsencrypt-auto
+	mkdir /var/www/letsencrypt
+	chgrp www-data /var/www/letsencrypt
+	print_warn "Lets Encrypt has been installed."
+}
 
 function install_iptables {
 
@@ -1332,6 +1400,15 @@ php)
 dotdeb)
 	install_dotdeb
 	;;
+letsencrypt)
+	install_letsencrypt
+	;;
+sslcert)
+	install_sslcert $2
+	;;
+renewcert)
+	renew_sslcert $2
+	;;	
 site)
 	install_site $2
 	;;
@@ -1406,8 +1483,11 @@ system)
 	echo '  - mysql                  (install MySQL and set root password)'
 	echo '  - nginx                  (install nginx and create sample PHP vhosts)'
 	echo '  - php                    (install PHP5-FPM with APC, cURL, suhosin, etc...)'
+	echo '  - letsencrypt            (install Lets Encrypt)'
 	echo '  - exim4                  (install exim4 mail server)'
 	echo '  - site      [domain.tld] (create nginx vhost and /var/www/$site/public)'
+	echo '  - sslcert   [domain.tld] (get ssl cert for site, run letsencrypt first)'
+	echo '  - renewcert [domain.tld] (renew ssl cert for site, run sslcert first)'
 	echo '  - mysqluser [domain.tld] (create matching mysql user and database)'
 	echo '  - wordpress [domain.tld] (create nginx vhost and /var/www/$wordpress/public)'
 	echo '  '
