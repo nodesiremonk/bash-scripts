@@ -13,7 +13,7 @@ then
             echo -e "The Let's Encrypt cert has not been renewed! \n \n" \
                 $ERRORLOG
         else
-            nginx -s reload
+            /usr/sbin/nginx -s reload
             echo -e "The Let's Encrypt cert has been successfully renewed! \n \n"
         fi
     else
