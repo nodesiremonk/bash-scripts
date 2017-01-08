@@ -183,6 +183,8 @@ function install_dotdeb {
 	then
 		echo "deb http://packages.dotdeb.org wheezy all" >> /etc/apt/sources.list
 		echo "deb-src http://packages.dotdeb.org wheezy all" >> /etc/apt/sources.list
+		echo "deb http://packages.dotdeb.org wheezy-php56 all" >> /etc/apt/sources.list
+		echo "deb-src http://packages.dotdeb.org wheezy-php56 all" >> /etc/apt/sources.list
 	fi
 	
 	# Debian version 8.x.x
@@ -190,6 +192,9 @@ function install_dotdeb {
 	then
 		echo "deb http://packages.dotdeb.org jessie all" >> /etc/apt/sources.list
 		echo "deb-src http://packages.dotdeb.org jessie all" >> /etc/apt/sources.list
+		echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/sources.list
+		echo "deb http://packages.dotdeb.org jessie-nginx-http2 all" >> /etc/apt/sources.list
+		echo "deb-src http://packages.dotdeb.org jessie-nginx-http2 all" >> /etc/apt/sources.list
 	fi
 
 	wget -q -O - http://www.dotdeb.org/dotdeb.gpg | apt-key add -
