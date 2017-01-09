@@ -328,28 +328,11 @@ function install_php {
 	check_install php5-cli php5-cli
 
 	# PHP modules
-	DEBIAN_FRONTEND=noninteractive apt-get -y install php5-cgi php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-mhash php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-tidy php5-xmlrpc php-gettext php5-xsl php5-common php5-cli php5-fpm php5-apc php5-dev php5-mysql php5-sqlite
+	DEBIAN_FRONTEND=noninteractive apt-get -y install php5-cgi php5-curl php5-gd php5-intl php-pear php5-imagick php5-imap php5-mcrypt php5-memcache php5-mhash php5-pspell php5-recode php5-snmp php5-tidy php5-xmlrpc php-gettext php5-xsl php5-common php5-cli php5-fpm php5-apcu php5-dev php5-mysql php5-sqlite
 
 	echo 'Using PHP-FPM to manage PHP processes'
 	echo ' '
-
-cat > /etc/php5/conf.d/apc.ini <<END
-[APC]
-;extension=apc.so
-apc.enabled=1
-apc.shm_segments=1
-apc.shm_size=32M
-apc.ttl=7200
-apc.user_ttl=7200
-apc.num_files_hint=1024
-apc.mmap_file_mask=/tmp/apc.XXXXXX
-apc.max_file_size = 1M
-apc.post_max_size = 1000M
-apc.upload_max_filesize = 1000M
-apc.enable_cli=0
-apc.rfc1867=0
-END
-
+	
 	if [ -f /etc/php5/fpm/php.ini ]
 		then
 			sed -i \
