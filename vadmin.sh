@@ -536,7 +536,8 @@ function install_sslcert {
 		die "Usage: `basename $0` site [domain]"
 	fi
 	
-	cat > " /etc/letsencrypt/configs/$1.conf" <<END
+	mkdir -p /etc/letsencrypt/configs
+	cat > "/etc/letsencrypt/configs/$1.conf" <<END
 # the domain we want to get the cert for;
 # technically it's possible to have multiple of this lines, but it only worked
 # with one domain for me, another one only got one cert, so I would recommend
@@ -677,9 +678,9 @@ server {
 	}
 	
 	## To allow Let's Encrypt to access the temporary file
-	#location /.well-known/acme-challenge {
-        #	root /var/www/letsencrypt;
-	#}
+	location /.well-known/acme-challenge {
+        	root /var/www/letsencrypt;
+	}
 
 	include /etc/nginx/php.conf;
 }
