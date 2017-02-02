@@ -1371,7 +1371,7 @@ function 3proxyauth {
 function install_openssl {
 	if grep ^8. /etc/debian_version > /dev/null
 	then
-		apt-get install openssl libssl-dev -t jessie-backports
+		apt-get -y install openssl libssl-dev -t jessie-backports
 		print_warn "OpenSSL has been installed."
 	else
 		print_warn "This is only for Debian 8."
@@ -1381,7 +1381,7 @@ function install_openssl {
 function install_certbot {
 	if grep ^8. /etc/debian_version > /dev/null
 	then
-		apt-get install certbot -t jessie-backports
+		apt-get -y install certbot -t jessie-backports
 		print_warn "Certbot has been installed."
 	else
 		print_warn "This is only for Debian 8."
