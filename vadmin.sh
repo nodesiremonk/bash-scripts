@@ -267,7 +267,7 @@ skip-innodb
 #innodb_use_native_aio=0
 #ignore-builtin-innodb
 default-storage-engine=MyISAM
-default-tmp-storage-engine=MyISAM
+#default-tmp-storage-engine=MyISAM
 max_connections = 50
 wait_timeout = 30
 key_buffer_size = 320K
