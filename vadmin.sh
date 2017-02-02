@@ -597,6 +597,9 @@ server {
 	error_log  /var/log/nginx/$1.error.log;
 	#error_page 404 /error/404/index.html;
 	
+	add_header X-Frame-Options DENY;
+	add_header X-Content-Type-Options nosniff;
+	
 	#=========== Https start ===========
 	#listen 443 ssl;  # ssl only
 	#listen 443 ssl spdy;  # ssl with spdy
