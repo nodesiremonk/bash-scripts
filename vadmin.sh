@@ -1367,6 +1367,26 @@ function 3proxyauth {
 	fi
 
 }
+
+function install_openssl {
+	if grep ^8. /etc/debian_version > /dev/null
+	then
+		apt-get install openssl -t jessie-backports
+		print_warn "OpenSSL has been installed."
+	else
+		print_warn "This is only for Debian 8."
+	fi
+}
+
+function install_certbot {
+	if grep ^8. /etc/debian_version > /dev/null
+	then
+		apt-get install certbot -t jessie-backports
+		print_warn "Certbot has been installed."
+	else
+		print_warn "This is only for Debian 8."
+	fi
+}
 ######################################################################## 
 # START OF PROGRAM
 ########################################################################
@@ -1446,6 +1466,12 @@ test)
 info)
 	show_os_arch_version
 	;;
+openssl)
+	install_openssl
+	;;
+certbot)
+	install_certbot
+	;;	
 system)
 	update_timezone
 	remove_unneeded
@@ -1467,11 +1493,13 @@ system)
 	echo 'Available options (in recomended order):'
 	echo '  - dotdeb                 (install dotdeb apt source for nginx 1.2+)'
 	echo '  - system                 (remove unneeded, upgrade system, install software)'
+	echo '  - openssl                (install openssl 1.0.2 for ALPN protocol with full HTTP2 support from jessie-backports)'
 	echo '  - dropbear  [port]       (SSH server)'
 	echo '  - iptables  [port]       (setup basic firewall with HTTP(S) open)'
 	echo '  - mysql                  (install MySQL and set root password)'
 	echo '  - nginx                  (install nginx and create sample PHP vhosts)'
 	echo '  - php                    (install PHP5-FPM with APC, cURL, suhosin, etc...)'
+	echo '  - certbot                (install Certbot from jessie-backports)'
 	echo '  - letsencrypt            (install Lets Encrypt)'
 	echo '  - exim4                  (install exim4 mail server)'
 	echo '  - site      [domain.tld] (create nginx vhost and /var/www/$site/public)'
