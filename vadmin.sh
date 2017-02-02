@@ -1371,7 +1371,7 @@ function 3proxyauth {
 function install_openssl {
 	if grep ^8. /etc/debian_version > /dev/null
 	then
-		apt-get install openssl -t jessie-backports
+		apt-get install openssl libssl-dev -t jessie-backports
 		print_warn "OpenSSL has been installed."
 	else
 		print_warn "This is only for Debian 8."
