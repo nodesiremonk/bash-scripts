@@ -549,7 +549,7 @@ authenticator = webroot
 webroot-path = /var/www/letsencrypt/	
 END
 
-	renew_sslcert $1
+#	renew_sslcert $1
 }
 
 function renew_sslcert {
