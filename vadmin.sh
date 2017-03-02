@@ -102,6 +102,10 @@ function install_nano {
 	check_install nano nano
 }
 
+function install_fail2ban {
+	check_install fail2ban fail2ban
+}
+
 function install_htop {
 	check_install htop htop
 }
@@ -1483,6 +1487,7 @@ system)
 #	install_vim
 	install_nano
 	install_htop
+	install_fail2ban
 #	install_mc
 	install_iotop
 	install_iftop
