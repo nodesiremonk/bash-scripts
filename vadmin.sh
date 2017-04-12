@@ -386,6 +386,7 @@ server {
 		allow all;
 		log_not_found off;
 		access_log off;
+		# return 200 "User-agent: *\nDisallow: /\n";
 	}
 
 	## Disable viewing .htaccess & .htpassword
