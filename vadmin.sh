@@ -644,7 +644,7 @@ server {
 		
 		# prevent hotlink
 		# valid_referers none blocked ~.google. ~.bing. ~.yahoo. server_names ~($host);
-		# if ($invalid_referer) {
+		# if (\$invalid_referer) {
 		#    rewrite (.*) /static/images/hotlink-denied.jpg redirect;
 		#    # or use "return 403;" if don't want to redirect
 		#    # drop the 'redirect' flag for redirect without URL change (internal rewrite)
