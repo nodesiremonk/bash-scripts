@@ -468,7 +468,7 @@ if [ -f /etc/nginx/nginx.conf ]
 	cat > /etc/nginx/nginx.conf <<END
 user www-data;
 pid /run/nginx.pid;
-worker_processes  4;
+worker_processes auto;
 worker_rlimit_nofile 100000;
 events {
     use epoll;
