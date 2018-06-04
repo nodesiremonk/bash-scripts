@@ -1397,13 +1397,30 @@ function install_certbot {
 	fi
 }
 
+function install_ss-obfs {
+	if grep ^8. /etc/debian_version > /dev/null
+	then
+		apt-get install -y --no-install-recommends build-essential autoconf libtool libssl-dev libpcre3-dev libev-dev asciidoc xmlto automake git
+		cd /opt
+		git clone https://github.com/shadowsocks/simple-obfs.git
+		cd simple-obfs
+		git submodule update --init --recursive
+		./autogen.sh
+		./configure && make
+		sudo make install
+		print_warn "Shadowsocks Simple Obfs has been installed."
+	else
+		print_warn "This is only for Debian 8."
+	fi
+}
+
 function install_shadowsocks {
 	if grep ^8. /etc/debian_version > /dev/null
 	then
 		sh -c 'printf "deb http://deb.debian.org/debian jessie-backports main\n" > /etc/apt/sources.list.d/jessie-backports.list'
 		sh -c 'printf "deb http://deb.debian.org/debian jessie-backports-sloppy main" >> /etc/apt/sources.list.d/jessie-backports.list'
 		apt update
-		apt -t jessie-backports-sloppy install shadowsocks-libev
+		apt -t jessie-backports-sloppy -y install shadowsocks-libev
 		print_warn "Shadowsocks-libev has been installed."
 	else
 		print_warn "This is only for Debian 8."
@@ -1496,6 +1513,9 @@ certbot)
 	;;
 shadowsocks)
 	install_shadowsocks
+	;;
+ssobfs)
+	install_ss-obfs
 	;;	
 system)
 	update_timezone
@@ -1528,6 +1548,7 @@ system)
 	echo '  - certbot                (install Certbot from jessie-backports)'
 	echo '  - letsencrypt            (install Lets Encrypt)'
 	echo '  - shadowsocks            (install Shadowsocks, only for Debian 8)'
+	echo '  - ssobfs                 (install Shadowsocks Simple Obfs, only for Debian 8)'
 	echo '  - exim4                  (install exim4 mail server)'
 	echo '  - site      [domain.tld] (create nginx vhost and /var/www/$site/public)'
 	echo '  - sslcert   [domain.tld] (get ssl cert for site, run letsencrypt first)'
