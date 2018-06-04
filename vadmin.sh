@@ -1396,6 +1396,19 @@ function install_certbot {
 		print_warn "This is only for Debian 8."
 	fi
 }
+
+function install_shadowsocks {
+	if grep ^8. /etc/debian_version > /dev/null
+	then
+		sh -c 'printf "deb http://deb.debian.org/debian jessie-backports main\n" > /etc/apt/sources.list.d/jessie-backports.list'
+		sh -c 'printf "deb http://deb.debian.org/debian jessie-backports-sloppy main" >> /etc/apt/sources.list.d/jessie-backports.list'
+		apt update
+		apt -t jessie-backports-sloppy install shadowsocks-libev
+		print_warn "Shadowsocks-libev has been installed."
+	else
+		print_warn "This is only for Debian 8."
+	fi
+}
 ######################################################################## 
 # START OF PROGRAM
 ########################################################################
@@ -1480,6 +1493,9 @@ openssl)
 	;;
 certbot)
 	install_certbot
+	;;
+shadowsocks)
+	install_shadowsocks
 	;;	
 system)
 	update_timezone
@@ -1511,6 +1527,7 @@ system)
 	echo '  - php                    (install PHP5-FPM with APC, cURL, suhosin, etc...)'
 	echo '  - certbot                (install Certbot from jessie-backports)'
 	echo '  - letsencrypt            (install Lets Encrypt)'
+	echo '  - shadowsocks            (install Shadowsocks, only for Debian 8)'
 	echo '  - exim4                  (install exim4 mail server)'
 	echo '  - site      [domain.tld] (create nginx vhost and /var/www/$site/public)'
 	echo '  - sslcert   [domain.tld] (get ssl cert for site, run letsencrypt first)'
