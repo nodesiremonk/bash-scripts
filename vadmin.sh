@@ -1408,6 +1408,7 @@ function install_ss-obfs {
 		./autogen.sh
 		./configure && make
 		sudo make install
+		setcap cap_net_bind_service+ep /usr/local/bin/obfs-server
 		print_warn "Shadowsocks Simple Obfs has been installed."
 	else
 		print_warn "This is only for Debian 8."
