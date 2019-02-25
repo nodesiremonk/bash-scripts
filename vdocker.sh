@@ -94,6 +94,10 @@ function install_nano {
 	check_install nano nano
 }
 
+function install_lsb_release {
+	check_install lsb_release lsb_release
+}
+
 function install_fail2ban {
 	check_install fail2ban fail2ban
 }
@@ -419,27 +423,25 @@ function update_upgrade {
 }
 
 function install_certbot {
-	if grep ^8. /etc/debian_version > /dev/null
-	then
-		apt-get -y install certbot -t jessie-backports
-		print_warn "Certbot has been installed."
-	else
-		print_warn "This is only for Debian 8."
-	fi
+	apt-get -y install certbot -t $(lsb_release -cs)-backports
+	print_warn "Certbot has been installed."
 }
 
-function install_shadowsocks {
-	if grep ^8. /etc/debian_version > /dev/null
-	then
-		sh -c 'printf "deb http://deb.debian.org/debian jessie-backports main\n" > /etc/apt/sources.list.d/jessie-backports.list'
-		sh -c 'printf "deb http://deb.debian.org/debian jessie-backports-sloppy main" >> /etc/apt/sources.list.d/jessie-backports.list'
-		apt update
-		apt -t jessie-backports-sloppy -y install shadowsocks-libev
-		print_warn "Shadowsocks-libev has been installed."
-	else
-		print_warn "This is only for Debian 8."
-	fi
+function install_docker {
+	apt update && apt -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
+	curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+	add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+	apt update && apt -y install docker-ce docker-ce-cli containerd.io
+	# might need to reboot here
+	# change 1.23.2 to latest version
+	curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+	chmod +x /usr/local/bin/docker-compose
 }
+
+function install_backport {
+	
+}
+
 ######################################################################## 
 # START OF PROGRAM
 ########################################################################
@@ -454,11 +456,8 @@ backport)
 	install_backport
 	;;    
 sslcert)
-	install_sslcert $2
+	install_sslcert $2 $3
 	;;
-renewcert)
-	renew_sslcert $2
-	;;	
 site)
 	install_site $2
 	;;
@@ -475,6 +474,7 @@ system)
 	update_timezone
 	remove_unneeded
 	update_upgrade
+	install_lsb_release
 	install_nano
 	install_htop
 	install_fail2ban
@@ -487,38 +487,13 @@ system)
 	echo '  '
 	echo 'Usage:' `basename $0` '[option] [argument]'
 	echo 'Available options (in recomended order):'
-#	echo '  - dotdeb                 (install dotdeb apt source for nginx 1.2+)'
-	echo '  - system                 (remove unneeded, upgrade system, install software)'
-#	echo '  - openssl                (install openssl 1.0.2 for ALPN protocol with full HTTP2 support from jessie-backports)'
-#	echo '  - dropbear  [port]       (SSH server)'
-	echo '  - iptables  [port]       (setup basic firewall with HTTP(S) open)'
-    echo '  - docker                 (install docker)'
-#	echo '  - mysql                  (install MySQL and set root password)'
-#	echo '  - nginx                  (install nginx and create sample PHP vhosts)'
-#	echo '  - php                    (install PHP5-FPM with APC, cURL, suhosin, etc...)'
-	echo '  - certbot                (install Certbot from jessie-backports)'
-#	echo '  - letsencrypt            (install Lets Encrypt)'
-#	echo '  - shadowsocks            (install Shadowsocks, only for Debian 8)'
-#	echo '  - ssobfs                 (install Shadowsocks Simple Obfs, only for Debian 8)'
-#	echo '  - exim4                  (install exim4 mail server)'
-	echo '  - site      [domain.tld] (create nginx vhost and /var/www/$site/public)'
-	echo '  - sslcert   [domain.tld] (get ssl cert for site, run letsencrypt first)'
-#	echo '  - renewcert [domain.tld] (renew ssl cert for site, run sslcert first)'
-#	echo '  - mysqluser [domain.tld] (create matching mysql user and database)'
-#	echo '  - wordpress [domain.tld] (create nginx vhost and /var/www/$wordpress/public)'
-	echo '  '
-	echo '... and now some extras'
-	echo '  - info                   (Displays information about the OS, ARCH and VERSION)'
-#	echo '  - sshkey                 (Generate SSH key)'
-#	echo '  - apt                    (update sources.list for UBUNTU only)'
-#	echo '  - ps_mem                 (Download the handy python script to report memory usage)'
-#	echo '  - vzfree                 (Install vzfree for correct memory reporting on OpenVZ VPS)'
-#	echo '  - motd                   (Configures and enables the default MOTD)'
-#	echo '  - locale                 (Fix locales issue with OpenVZ Ubuntu templates)'
-#	echo '  - webmin                 (Install Webmin for VPS management)'
-	echo '  - test                   (Run the classic disk IO and classic cachefly network test)'
-#	echo '  - 3proxy                 (Install 3proxy - Free tiny proxy server, with authentication support, HTTP, SOCKS5 and whatever you can throw at it)'
-#	echo '  - 3proxyauth             (add users/passwords to your proxy user authentication list)'
+	echo '  - system                         (remove unneeded, upgrade system, install software)'
+	echo '  - iptables  [port]               (setup basic firewall with HTTP(S) open)'
+    echo '  - docker                         (install docker)'
+	echo '  - certbot                        (install Certbot from backports)'
+	echo '  - site      [domain.tld]         (create nginx vhost and /var/www/$site/public)'
+	echo '  - sslcert   [domain.tld] [email] (get ssl cert for site, run letsencrypt first)'
+	echo '  - test                           (Run the classic disk IO and classic cachefly network test)'
 	echo '  '
 	;;
 esac
