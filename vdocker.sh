@@ -148,6 +148,10 @@ function install_iftop {
 	print_warn "Example usage: iftop -i venet0"
 }
 
+function update_timezone {
+	dpkg-reconfigure tzdata
+}
+
 function install_sslcert {
 	if [ -z "$1" ]
 	then
@@ -471,7 +475,7 @@ function install_docker {
 }
 
 function install_backport {
-	echo "deb http://deb.debian.org/debian $(lsb_release -cs)-backports main\n > /etc/apt/sources.list.d/backports.list"
+	echo "deb http://deb.debian.org/debian $(lsb_release -cs)-backports main" > /etc/apt/sources.list.d/backports.list
 	apt update
 	print_warn "backport has been installed."
 }
