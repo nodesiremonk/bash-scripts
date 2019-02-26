@@ -523,6 +523,7 @@ system)
 	echo 'Available options (in recomended order):'
 	echo '  - system                         (remove unneeded, upgrade system, install software)'
 	echo '  - iptables  [port]               (setup basic firewall with HTTP(S) open)'
+	echo '  - backport                       (install backport repo, required for certbot)'
     echo '  - docker                         (install docker)'
 	echo '  - certbot                        (install Certbot from backports)'
 	echo '  - site      [domain.tld]         (create nginx vhost and /var/www/$site/public)'
