@@ -127,7 +127,7 @@ function install_nano {
 }
 
 function install_lsb_release {
-	check_install lsb_release lsb_release
+	check_install lsb-release lsb-release
 }
 
 function install_fail2ban {
