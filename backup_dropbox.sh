@@ -13,7 +13,7 @@ NOW=$(date +"%A")
 DESTFILE="$BACKUP_DST/$NOW.tar.gz"
 
 mysqldump -u $MYSQL_USER -h $MYSQL_SERVER -p$MYSQL_PASS $MYSQL_DB > "$NOW-Databases.sql"
-tar --exclude-vcs -zcvf "$DESTFILE" $BACKUP_SRC "$NOW-Databases.sql"
+tar --exclude-vcs -zcf "$DESTFILE" $BACKUP_SRC "$NOW-Databases.sql"
 
 $SCRIPT_DIR/dropbox_uploader.sh upload "$DESTFILE" "$DROPBOX_DIR/$NOW.tar.gz"
 
