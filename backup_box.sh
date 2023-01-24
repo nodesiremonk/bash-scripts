@@ -31,7 +31,7 @@ CHECK_FILE=$(curl -X OPTIONS "https://api.box.com/2.0/files/content" \
 
 CODE=$(echo $CHECK_FILE | getJsonVal "['code']")
 
-if [ $CODE == "item_name_in_use" ]
+if [ "$CODE" == "item_name_in_use" ]
 then
     # file exists, update version
     FILE_ID=$(echo $CHECK_FILE | getJsonVal "['context_info']['conflicts']['id']")
