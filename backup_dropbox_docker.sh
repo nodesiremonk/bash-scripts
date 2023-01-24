@@ -12,7 +12,7 @@ MYSQL_CONTAINER="mysql"
 NOW=$(date +"%A")
 DESTFILE="$BACKUP_DST/$NOW.tar.gz"
 
-/usr/bin/docker exec $MYSQL_CONTAINER /usr/bin/mysqldump -u $MYSQL_USER -p$MYSQL_PASS $MYSQL_DB > "$NOW-Databases.sql"
+/usr/bin/docker exec $MYSQL_CONTAINER /usr/bin/mysqldump --no-tablespaces -u $MYSQL_USER -p$MYSQL_PASS $MYSQL_DB > "$NOW-Databases.sql"
 tar --exclude-vcs -zcf "$DESTFILE" $BACKUP_SRC "$NOW-Databases.sql"
 
 $SCRIPT_DIR/dropbox_uploader.sh upload "$DESTFILE" "$DROPBOX_DIR/$NOW.tar.gz"
