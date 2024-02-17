@@ -18,7 +18,7 @@ FILE_NAME="$TODAY.tar.gz"
 DEST_FILE="$BACKUP_DST/$FILE_NAME"
 
 /usr/bin/docker exec $MYSQL_CONTAINER /usr/bin/mysqldump --no-tablespaces -u $MYSQL_USER -p$MYSQL_PASS $MYSQL_DB > "$TODAY-DB.sql"
-tar --exclude-vcs -zcf "$DEST_FILE" $BACKUP_SRC "$TODAY-DB.sql"
+tar --exclude-vcs --exclude "node_modules" --exclude "vendor" --exclude "tmp" --exclude "_static" -zcf "$DEST_FILE" $BACKUP_SRC "$TODAY-DB.sql"
 
 PARM="{\"name\":\"$FILE_NAME\",\"parent\":{\"id\":\"$BOX_FOLDER_ID\"}}"
 AUTH="Authorization: Bearer $BOX_ACCESS_TOKEN"
