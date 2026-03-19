@@ -7,10 +7,14 @@ set -euo pipefail
 # Loads credentials from a .env file (never hard-coded).
 # Usage: ./backup_sqlite.sh [/path/to/.env]   (defaults to same dir as script)
 #
-# SQLite has no host/user/password — DB_PATH points to the .db file directly.
-# If the database is inside a Docker container, set DB_CONTAINER and
-# DB_PATH to the in-container path; otherwise leave DB_CONTAINER empty
-# and set DB_PATH to the local filesystem path.
+# SQLite has no host/user/password — DB_PATH points to the .db file.
+# Set DB_MODE in your .env to one of three values:
+#
+#   local            sqlite3 and the .db file are both on the host filesystem
+#   docker_exec      sqlite3 and the .db file are both inside a running container
+#   docker_local     sqlite3 is in a container; the .db file is on the host filesystem
+#
+# DB_CONTAINER is required for docker_exec and docker_local modes.
 #
 # Encryption: the .tar.gz is encrypted with GPG (AES-256) before upload.
 # The passphrase is read from the file path set in BACKUP_PASSPHRASE_FILE
@@ -42,7 +46,7 @@ while IFS='=' read -r key value; do
     [[ "$key" =~ ^[[:space:]]*# ]] && continue
     [[ -z "$key" ]]               && continue
     case "$key" in
-        DB_NAME|DB_PATH|DB_CONTAINER|\
+        DB_NAME|DB_PATH|DB_CONTAINER|DB_MODE|\
         DROPBOX_DIR|BACKUP_DST|BACKUP_PASSPHRASE_FILE)
             printf -v "$key" '%s' "$value"
             ;;
@@ -50,13 +54,24 @@ while IFS='=' read -r key value; do
 done < "$ENV_FILE"
 
 # ── Validate required variables ──────────────────────────────────────────────
-required_vars=(DB_NAME DB_PATH DROPBOX_DIR BACKUP_DST BACKUP_PASSPHRASE_FILE)
+required_vars=(DB_NAME DB_PATH DB_MODE DROPBOX_DIR BACKUP_DST BACKUP_PASSPHRASE_FILE)
 for var in "${required_vars[@]}"; do
     if [[ -z "${!var:-}" ]]; then
         echo "[ERROR] Required variable '$var' is not set in $ENV_FILE" >&2
         exit 1
     fi
 done
+
+# ── Validate DB_MODE ─────────────────────────────────────────────────────────
+if [[ "$DB_MODE" != "local" && "$DB_MODE" != "docker_exec" && "$DB_MODE" != "docker_local" ]]; then
+    echo "[ERROR] DB_MODE must be one of: local, docker_exec, docker_local (got: '$DB_MODE')" >&2
+    exit 1
+fi
+
+if [[ "$DB_MODE" != "local" && -z "${DB_CONTAINER:-}" ]]; then
+    echo "[ERROR] DB_CONTAINER must be set when DB_MODE is '$DB_MODE'" >&2
+    exit 1
+fi
 
 # ── Validate passphrase file ─────────────────────────────────────────────────
 if [[ ! -f "$BACKUP_PASSPHRASE_FILE" ]]; then
@@ -82,9 +97,9 @@ for cmd in tar gpg; do
     fi
 done
 
-# docker is only required if DB_CONTAINER is set
-if [[ -n "${DB_CONTAINER:-}" ]] && ! command -v docker &>/dev/null; then
-    echo "[ERROR] DB_CONTAINER is set but docker was not found." >&2
+# docker is only required for docker_exec and docker_local modes
+if [[ "$DB_MODE" != "local" ]] && ! command -v docker &>/dev/null; then
+    echo "[ERROR] DB_MODE is '$DB_MODE' but docker was not found." >&2
     exit 1
 fi
 
@@ -111,27 +126,50 @@ ENCRYPTED_FILE="$WORK_DIR/${NOW}.tar.gz.gpg"
 # other scripts. Using .dump (rather than copying the raw .db file) ensures
 # the backup is not taken mid-write and avoids journal/WAL file concerns.
 
-echo "[INFO] Starting sqlite3 dump …"
+echo "[INFO] Starting sqlite3 dump (mode: $DB_MODE) …"
 
-if [[ -n "${DB_CONTAINER:-}" ]]; then
-    # Database lives inside a running Docker container
-    if ! docker exec "$DB_CONTAINER" \
-            sqlite3 "$DB_PATH" .dump \
-        > "$SQL_FILE"; then
-        echo "[ERROR] sqlite3 dump (docker) failed." >&2
-        exit 1
-    fi
-else
-    # Database is directly accessible on the local filesystem
-    if [[ ! -f "$DB_PATH" ]]; then
-        echo "[ERROR] SQLite database file not found: $DB_PATH" >&2
-        exit 1
-    fi
-    if ! sqlite3 "$DB_PATH" .dump > "$SQL_FILE"; then
-        echo "[ERROR] sqlite3 dump failed." >&2
-        exit 1
-    fi
-fi
+case "$DB_MODE" in
+
+    local)
+        # sqlite3 and the .db file are both on the host filesystem
+        if [[ ! -f "$DB_PATH" ]]; then
+            echo "[ERROR] SQLite database file not found: $DB_PATH" >&2
+            exit 1
+        fi
+        if ! sqlite3 "$DB_PATH" .dump > "$SQL_FILE"; then
+            echo "[ERROR] sqlite3 dump failed." >&2
+            exit 1
+        fi
+        ;;
+
+    docker_exec)
+        # sqlite3 and the .db file are both inside a running container
+        if ! docker exec "$DB_CONTAINER" \
+                sqlite3 "$DB_PATH" .dump \
+            > "$SQL_FILE"; then
+            echo "[ERROR] sqlite3 dump (docker exec) failed." >&2
+            exit 1
+        fi
+        ;;
+
+    docker_local)
+        # sqlite3 is in a container image; the .db file is on the host filesystem.
+        # Mount the local file into the container at the same path (read-only).
+        if [[ ! -f "$DB_PATH" ]]; then
+            echo "[ERROR] SQLite database file not found: $DB_PATH" >&2
+            exit 1
+        fi
+        if ! docker run --rm \
+                -v "$DB_PATH:$DB_PATH:ro" \
+                "$DB_CONTAINER" \
+                sqlite3 "$DB_PATH" .dump \
+            > "$SQL_FILE"; then
+            echo "[ERROR] sqlite3 dump (docker run) failed." >&2
+            exit 1
+        fi
+        ;;
+
+esac
 
 # ── Compress ─────────────────────────────────────────────────────────────────
 echo "[INFO] Compressing backup …"
